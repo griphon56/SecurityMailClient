@@ -16,6 +16,11 @@ namespace MailClient
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Метод автосохранения.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             if (cbAuth.Checked)
@@ -34,6 +39,11 @@ namespace MailClient
             }
         }
 
+        /// <summary>
+        /// Метод загрузки настроек.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void GUI_Option_Load(object sender, EventArgs e)
         {
             tbHost.Text = Properties.Settings.Default.smtpHost;
@@ -48,6 +58,11 @@ namespace MailClient
             popUseSSL.Checked = Properties.Settings.Default.popUseSSL;
         }
 
+        /// <summary>
+        /// Метод сохранени настроек.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnSave_Click(object sender, EventArgs e)
         {
             Properties.Settings.Default.smtpHost = tbHost.Text;

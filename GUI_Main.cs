@@ -20,9 +20,13 @@ namespace MailClient
     public partial class GUI_Main : Form
     {
         private readonly Pop3Client pop3Client;
+        // Объявляю CspParmeters и RsaCryptoServiceProvider
+        // объекты с глобальной областью класса Form.
         private static CspParameters cspp = new CspParameters();
         private static RSACryptoServiceProvider rsa;
+
         private static AesCryptoServiceProvider aes;
+
         const string keyName = "Key";
         private readonly Dictionary<int, Message> messages = new Dictionary<int, Message>();
         private static Dictionary<string, string> keys = new Dictionary<string, string>();
@@ -36,6 +40,9 @@ namespace MailClient
             cspp.KeyContainerName = keyName;
             rsa = new RSACryptoServiceProvider(cspp);
             rsa.PersistKeyInCsp = true;
+
+            // Создание экземпляра Rijndael 
+            // для симмертричного шифрования.
             aes = new AesCryptoServiceProvider();
             aes.BlockSize = 128;
             aes.KeySize = 128;
@@ -48,34 +55,62 @@ namespace MailClient
                 }
         }
 
+        /// <summary>
+        /// Кнопка перекинет на форму создания смс (Через меню).
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void newMailToolStripMenuItem_Click(object sender, EventArgs e)
         {
             GUI_MailCreate MailForm = new GUI_MailCreate();
             MailForm.Show();
         }
 
+        /// <summary>
+        /// Кнопка перекинет на форму настроек.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void optionsToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             GUI_Option OptionForm = new GUI_Option();
             OptionForm.Show();
         }
 
+        /// <summary>
+        /// Кнопка закроет приложение.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void exitToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             Application.Exit();
         }
 
+        /// <summary>
+        /// Кнопка перекинет на форму создания смс.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void tbstNew_Click(object sender, EventArgs e)
         {
             GUI_MailCreate MailForm = new GUI_MailCreate();
             MailForm.Show();
         }
 
+        /// <summary>
+        /// Кнопка получения писем.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void tbstGet_Click(object sender, EventArgs e)
         {
             ReceiveMails();
         }
 
+        /// <summary>
+        /// Метод получение писем.
+        /// </summary>
         private void ReceiveMails()
         {
             tsbtNew.Enabled = false;
@@ -88,12 +123,15 @@ namespace MailClient
             {
                 if (pop3Client.Connected)
                     pop3Client.Disconnect();
+
+                // Подключаюсь к почте.
                 pop3Client.Connect(Properties.Settings.Default.popHost, Properties.Settings.Default.popPort, Properties.Settings.Default.popUseSSL);
                 pop3Client.Authenticate(Properties.Settings.Default.popUsername, Properties.Settings.Default.popPassword);
                 int count = pop3Client.GetMessageCount();
                 totalMessagesCount.Text = count.ToString();
                 mailViewer.DocumentText = "";
                 listMessages.Nodes.Clear();
+
                 int success = 0;
                 int fail = 0;
                 Font bold = new Font(listMessages.Font, FontStyle.Bold);
@@ -118,7 +156,9 @@ namespace MailClient
 
                         if (!seenUids.Contains(message.Headers.MessageId))
                             node.NodeFont = bold;
+
                         listMessages.Nodes.Add(node);
+
                         if(message.Headers.Subject == "KEYMAIL")
                         {
                             if (!keys.ContainsKey(message.Headers.From.Address))
@@ -187,6 +227,11 @@ namespace MailClient
             }
         }
 
+        /// <summary>
+        /// Список сообщений.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ListMessagesMessageSelected(object sender, TreeViewEventArgs e)
         {             
             Message message = messages[GetMessageNumberFromSelectedNode(listMessages.SelectedNode)];
@@ -252,6 +297,11 @@ namespace MailClient
             listMessages.Refresh();
         }
 
+        /// <summary>
+        /// Метод для получения номера смс в выбранной ноде дерева
+        /// </summary>
+        /// <param name="node">Нода дерева</param>
+        /// <returns></returns>
         private static int GetMessageNumberFromSelectedNode(TreeNode node)
         {
             if (node == null)
@@ -267,6 +317,11 @@ namespace MailClient
             return GetMessageNumberFromSelectedNode(node.Parent);
         }
 
+        /// <summary>
+        /// Метод расшифровки смс.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void tbstCrypto_Click(object sender, EventArgs e)
         {
             File.Delete("msg");
@@ -278,8 +333,17 @@ namespace MailClient
                 {
                     rsa = new RSACryptoServiceProvider(cspp);
                     rsa.PersistKeyInCsp = true;
+                    // Записываем тело смс в байтовый массив. 
                     File.WriteAllBytes("tmp", StrToByteArray(mailViewer.DocumentText.TrimEnd("\r\n".ToCharArray())));
-                    FileStream inFs = new FileStream("tmp", FileMode.Open);                    
+                   
+                    // Используем объект FileStream для чтения зашифрованного
+                    // файла (inFs) и сохранить дешифрованный файл (outFs)
+                    FileStream inFs = new FileStream("tmp", FileMode.Open);
+                    
+                    // Создаем массивы байтов, чтобы получить длину
+                    // зашифрованный ключ и IV.
+                    // Эти значения сохранялись как 4 байта каждый
+                    // в начале зашифрованного пакета
                     byte[] LenK = new byte[4];
                     inFs.Read(LenK, 0, 4);
                     byte[] LenIV = new byte[4];
@@ -288,21 +352,32 @@ namespace MailClient
                     int lenK = BitConverter.ToInt32(LenK, 0);
                     int lenIV = BitConverter.ToInt32(LenIV, 0);
 
+                    // Определяем начальную позицию 
+                    // зашифрованного текста (startS) и его длины (lenC).
                     int startC = lenK + lenIV + 8;
                     int lenC = (int)inFs.Length - startC;
 
+                    // Создаем байтовые массивы для
+                    // зашифрованный ключ , IV и шифрованный текст.
                     byte[] KeyEncrypted = new byte[lenK];
                     byte[] IV = new byte[lenIV];
 
+                    // Извлечение ключа и IV
+                    // начиная с 8-го индекса
+                    // после значений длины.
                     inFs.Seek(8, SeekOrigin.Begin);
                     inFs.Read(KeyEncrypted, 0, lenK);
                     inFs.Seek(8 + lenK, SeekOrigin.Begin);
                     inFs.Read(IV, 0, lenIV);
 
+                    // Используется RSACryptoServiceProvider для расшифровки ключа.
                     byte[] KeyDecrypted = rsa.Decrypt(KeyEncrypted, false);
 
                     ICryptoTransform transform = aes.CreateDecryptor(KeyDecrypted, IV);
 
+                    // Расшифровка шифрованного текст с помощью FileSteam
+                    // зашифрованного файла (inFs) в FileStream
+                    // для дешифрованного файла (outFs).
                     FileStream outFs = new FileStream("msg", FileMode.Create);
                     int count = 0;
                     int offset = 0;
@@ -331,6 +406,7 @@ namespace MailClient
                     }
                     else
                     {
+                        // Проверка цифровой подписи.
                         rsa.FromXmlString(keys[new MailAddress(tbFrom.Text).Address]);
                         using (FileStream inF = new FileStream("msg", FileMode.Open))
                         {
@@ -367,12 +443,22 @@ namespace MailClient
             File.Delete("tmp");
         }
 
+        /// <summary>
+        /// Кнопка настройка - перенесет на форму настройки протокола (SMTP POP3)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void tsbtSettings_Click(object sender, EventArgs e)
         {
             GUI_Option OptionForm = new GUI_Option();
             OptionForm.Show();
         }
 
+        /// <summary>
+        /// Сохранение смс и добавление к нему цифровой подписи.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void tbstSave_Click(object sender, EventArgs e)
         {
             cspp.KeyContainerName = keyName;
@@ -382,6 +468,7 @@ namespace MailClient
             string name = "Messages/" + message.Headers.MessageId + ".mmsg";
             FileInfo f = new FileInfo(name);            
 
+            // Добавление цифровой подписи.
             byte[] data = message.RawMessage;
 
             byte[] signature = rsa.SignData(data, new MD5CryptoServiceProvider());
@@ -399,11 +486,17 @@ namespace MailClient
             }
         }
 
+        /// <summary>
+        /// Метод открытия сохраненного смс и проверка цифровой подписи.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void tbstOpen_Click(object sender, EventArgs e)
         {
             cspp.KeyContainerName = keyName;
             rsa = new RSACryptoServiceProvider(cspp);
             rsa.PersistKeyInCsp = true;
+            // Выбираю смс для просмотра.
             OpenFileDialog openFile = new OpenFileDialog();
             openFile.RestoreDirectory = true;
             openFile.InitialDirectory = "Messages";
@@ -415,6 +508,7 @@ namespace MailClient
                 listMessages.SendToBack();
                 string fileName = openFile.FileName;
 
+                // Проверка цифровой подписи.
                 using (FileStream inFs = new FileStream(fileName, FileMode.Open))
                 {
                     byte[] LenSign = new byte[4];
@@ -464,6 +558,7 @@ namespace MailClient
             }
         }
 
+
         private void listMessages_Enter(object sender, EventArgs e)
         {
             changeButtonsState();
@@ -473,6 +568,10 @@ namespace MailClient
         {
             changeButtonsState();
         }
+
+        /// <summary>
+        /// Скрыть\Показать кнопки (Расшифровать, сохранить, удалить)
+        /// </summary>
         private void changeButtonsState()
         {
             if (tbFrom.Text.Length == 0)
@@ -489,9 +588,14 @@ namespace MailClient
             }
         }
 
+        /// <summary>
+        /// Метод удаления сообщения из почты.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void tbstDelete_Click(object sender, EventArgs e)
         {
-            DialogResult dialogResult = MessageBox.Show("Вы действительно хотите безвозвратно удалить письмо?", "Удаление", MessageBoxButtons.YesNo);
+            DialogResult dialogResult = MessageBox.Show("Вы действительно хотите удалить письмо?", "Удаление", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.Yes)
             {
                 if (pop3Client.Connected)
@@ -506,6 +610,11 @@ namespace MailClient
             }
         }
 
+        /// <summary>
+        /// Метод обновления списка сообщений.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void clearToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (File.Exists("ids")) File.Delete("ids");
@@ -513,6 +622,11 @@ namespace MailClient
             listMessages.Refresh();
         }
 
+        /// <summary>
+        /// Метод скачивания вложения из сообщения.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btDownload_Click(object sender, EventArgs e)
         {
             if (cbAttachments.SelectedIndex >= 0)
@@ -529,6 +643,12 @@ namespace MailClient
             }
             
         }
+
+        /// <summary>
+        /// Метод переводе из строки в байтовый массив.
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
         static public byte[] StrToByteArray(string str)
         {
             if (str.Length == 0)
@@ -547,7 +667,12 @@ namespace MailClient
             while (i < str.Length);
             return byteArr;
         }
-        
+
+        /// <summary>
+        /// Метод переводе из байтового массива в строку.
+        /// </summary>
+        /// <param name="byteArr"></param>
+        /// <returns></returns>
         static public string ByteArrToString(byte[] byteArr)
         {
             byte val;
@@ -566,9 +691,13 @@ namespace MailClient
         }
     }
 
-
     internal class TreeNodeBuilder : IAnswerMessageTraverser<TreeNode>
     {
+        /// <summary>
+        /// Просмотреть сообщение.
+        /// </summary>
+        /// <param name="message">Объект сообщения</param>
+        /// <returns></returns>
         public TreeNode VisitMessage(Message message)
         {
             if (message == null)
@@ -581,6 +710,11 @@ namespace MailClient
             return topNode;
         }
 
+        /// <summary>
+        /// Просмотреть часть сообщения.
+        /// </summary>
+        /// <param name="messagePart"></param>
+        /// <returns>Текущую ноду</returns>
         public TreeNode VisitMessagePart(MessagePart messagePart)
         {
             if (messagePart == null)

@@ -13,22 +13,37 @@ namespace MailClient
     public partial class GUI_MailCreate : Form
     {
         MailMessage message;
+        
+        // Объявляю CspParmeters и RsaCryptoServiceProvider
+        // объекты с глобальной областью класса Form.
         private static CspParameters cspp = new CspParameters();
         private static RSACryptoServiceProvider rsa;
+
+        //private static AesCryptoServiceProvider aes;
         private static AesCryptoServiceProvider aes;
+
         const string keyName = "Key";
         private static Dictionary<string, string> keys = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Инициализаци нового смс.
+        /// </summary>
         public GUI_MailCreate()
         {
             InitializeComponent();
             message = new MailMessage();
             cspp.KeyContainerName = keyName;
+
             rsa = new RSACryptoServiceProvider(cspp);
             rsa.PersistKeyInCsp = true;
+
+            // Создание экземпляра Rijndael 
+            // для симмертричного шифрования.
             aes = new AesCryptoServiceProvider();
             aes.BlockSize = 128;
             aes.KeySize = 128;
             aes.Mode = CipherMode.CBC;
+
             if (File.Exists("contacts"))
                 foreach (string s in File.ReadAllLines("contacts"))
                 {
@@ -37,6 +52,11 @@ namespace MailClient
                 }
         }
 
+        /// <summary>
+        /// Метод отправки сообщения.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btSend_Click(object sender, EventArgs e)
         {
             string errorMsg;
@@ -44,33 +64,26 @@ namespace MailClient
             {
                 tbRecipient.Select(0, tbRecipient.Text.Length);
 
-                // Set the ErrorProvider error with the text to display. 
+                // Устанавливает ошибку ErrorProvider с отображаемым текстом.
                 this.errorProvider1.SetError(tbRecipient, errorMsg);
             }
             else if (tbCc.TextLength>0&&!ValidEmailAddress(tbCc.Text, out errorMsg))
             {
                 tbRecipient.Select(0, tbCc.Text.Length);
 
-                // Set the ErrorProvider error with the text to display. 
+                // Устанавливает ошибку ErrorProvider с отображаемым текстом.
                 this.errorProvider2.SetError(tbCc, errorMsg);
             }
-            //if (!ValidEmailAddress(tbCc.Text, out errorMsg))
-            //{
-            //    tbCc.Select(0, tbCc.Text.Length);
-
-            //    // Set the ErrorProvider error with the text to display. 
-            //    this.errorProvider1.SetError(tbCc, errorMsg);
-            //}
             else
             {
-                // Create SMTP Client.
+                // Создание SMTP клиента.
                 SmtpClient smtpClient = new SmtpClient(Properties.Settings.Default.smtpHost,
                     Properties.Settings.Default.smtpPort);
                 smtpClient.EnableSsl = true;
                 smtpClient.Credentials = new System.Net.NetworkCredential(Properties.Settings.Default.smtpUsername,
                     Properties.Settings.Default.smtpPassword);
 
-                // Create Mailadresses and construct message
+                // Создание Mail Adresses и построение смс.
                 MailAddress to = new MailAddress(tbRecipient.Text);
                 MailAddress from = new MailAddress(Properties.Settings.Default.smtpUsername);
 
@@ -103,26 +116,39 @@ namespace MailClient
             }
         }
 
+        /// <summary>
+        /// Метод проверки валидности получателя.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void tbRecipient_Validated(object sender, System.EventArgs e)
         {
-            // If all conditions have been met, clear the ErrorProvider of errors.
+            //Если все условия выполнены, очистит ErrorProvider от ошибок.
             errorProvider1.SetError(tbRecipient, "");
         }
 
+        /// <summary>
+        /// Метод проверки валидности получателя копии смс.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void tbCc_Validated(object sender, System.EventArgs e)
         {
-            // If all conditions have been met, clear the ErrorProvider of errors.
+            //Если все условия выполнены, очистит ErrorProvider от ошибок.
             errorProvider1.SetError(tbCc, "");
         }
+
+        /// <summary>
+        /// Метод проверка валидности почтового адреса.
+        /// </summary>
+        /// <param name="emailAddress">Почтовый адрес.</param>
+        /// <param name="errorMessage">Сообщение об ошибке.</param>
+        /// <returns>
+        /// <th>true</th>Сообшение об ошибке.
+        /// <th>false</th>Пустая строка.
+        /// </returns>
         public bool ValidEmailAddress(string emailAddress, out string errorMessage)
         {
-            //// Confirm that the e-mail address string is not empty.
-            //if (emailAddress.Length == 0)
-            //{
-            //    errorMessage = "Необходимо ввести адрес.";
-            //    return false;
-            //}
-
             // Confirm that there is an "@" and a "." in the e-mail address, and in the correct order.
             if (emailAddress.IndexOf("@") > -1)
             {
@@ -138,25 +164,37 @@ namespace MailClient
             return false;
         }
 
+        /// <summary>
+        /// Метод шифрования смс.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btEncrypt_Click(object sender, EventArgs e)
         {
             File.Delete("msg");
             File.Delete("tmp");
+            // У Клиента не ключа для расшифрования смс.
             if (!keys.Keys.Contains(tbRecipient.Text))
             {
                 MessageBox.Show("Отсутствует ключ для данного получателя!", "Ошибка");
             }
+            // Зашифровка смс.
             else if(tbRecipient.Text.Length != 0 && rtBody.Text.Length !=0)
             {
+                // Тело сообщения записываем в файл
                 File.WriteAllText("msg", rtBody.Text);
 
+                // ДОБАВЛЕНИЕ ЦИФРОВОЙ ПОДПИСИ К СМС 
+                // Файл переводим в байтовый массив. 
                 byte[] msg = File.ReadAllBytes("msg");
+                // Получаем зашифрованную сигнатуру(зашифрованный хеш  смс) в байтовый массив
                 byte[] signature = rsa.SignData(msg, new MD5CryptoServiceProvider());
-
+                // Получить длинну хеша.
                 int lSign = signature.Length;
-
+                // Перевести длинну  хеша в байтовый массив.
                 byte[] LenSign = BitConverter.GetBytes(lSign);
 
+                //Прикрепляю цифровую подписть в начало смс.
                 using (FileStream outF = new FileStream("msg", FileMode.Create))
                 {
                     outF.Write(LenSign, 0, 4);
@@ -165,11 +203,19 @@ namespace MailClient
                     outF.Close();
                 }
 
+                // Получаю (из XML) ключ отправленный получателю.
                 rsa.FromXmlString(keys[tbRecipient.Text]);
 
+                // Создаем объект для симметричного шифрования.
                 ICryptoTransform transform = aes.CreateEncryptor();
+
+                // Используется AesCryptoServiceProvider для шифрования ключа. 
+                // предварительно создается rsa :
+                // rsa = new RSACryptoServiceProvider (cspp);
                 byte[] keyEncrypted = rsa.Encrypt(aes.Key, false);
 
+                // Создание байт-массивов для хранения
+                // значения длины ключа и IV.
                 int lKey = keyEncrypted.Length;
                 byte[] LenK = BitConverter.GetBytes(lKey);
                 int lIV = aes.IV.Length;
@@ -181,10 +227,12 @@ namespace MailClient
                 outFs.Write(keyEncrypted, 0, lKey);
                 outFs.Write(aes.IV, 0, lIV);
 
+                // Записываем шифрованный текст используя CryptoStream.
                 CryptoStream outStreamEncrypted = new CryptoStream(outFs, transform, CryptoStreamMode.Write);
                 int count = 0;
                 int offset = 0;
 
+                // blockSizeBytes can be any arbitrary size.
                 int blockSize = aes.BlockSize / 8;
                 byte[] data = new byte[blockSize];
                 int bytesRead = 0;
@@ -210,6 +258,11 @@ namespace MailClient
             
         }
 
+        /// <summary>
+        /// Метод прикрепления вложения в сообщению.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btAddAttachment_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFile = new OpenFileDialog();
@@ -232,11 +285,15 @@ namespace MailClient
 
         }
 
+        /// <summary>
+        /// Удалить прикрепленное вложение.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btDeleteAttachment_Click(object sender, EventArgs e)
         {
             if(cbAttachments.SelectedIndex > -1)
-            {
-                
+            {      
                 message.Attachments.RemoveAt(cbAttachments.SelectedIndex);
                 cbAttachments.Items.RemoveAt(cbAttachments.SelectedIndex);
                 cbAttachments.SelectedIndex = cbAttachments.Items.Count-1;
@@ -244,6 +301,11 @@ namespace MailClient
             }
         }
 
+        /// <summary>
+        /// Метод отправки ключа.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btSendKey_Click(object sender, EventArgs e)
         {
             string errorMsg;
@@ -256,15 +318,17 @@ namespace MailClient
             }
             else
             {
-                // Create SMTP Client.
+                // Создаю SMTP клиент.
                 SmtpClient smtpClient = new SmtpClient(Properties.Settings.Default.smtpHost,
                     Properties.Settings.Default.smtpPort);
                 smtpClient.EnableSsl = true;
                 smtpClient.Credentials = new System.Net.NetworkCredential(Properties.Settings.Default.smtpUsername,
                     Properties.Settings.Default.smtpPassword);
 
-                // Create Mailadresses and construct message
+                // Создаю Mail Adresses и структуру смс
+                // Получатель.
                 MailAddress to = new MailAddress(tbRecipient.Text);
+                // Отправитель.
                 MailAddress from = new MailAddress(Properties.Settings.Default.smtpUsername);
 
                 //message = new MailMessage(from, to);
@@ -272,7 +336,7 @@ namespace MailClient
                 message.To.Add(to);
                 message.IsBodyHtml = false;
                 message.Body = rsa.ToXmlString(false);
-                message.Subject = "KEYMAIL";
+                message.Subject = "Ключ от сообщения.";
 
                 try
                 {
@@ -289,6 +353,12 @@ namespace MailClient
             }
 
         }
+
+        /// <summary>
+        /// Метод переводе из строки в байтовый массив.
+        /// </summary>
+        /// <param name="str">Строка для перевода.</param>
+        /// <returns></returns>
         static public byte[] StrToByteArray(string str)
         {
             if (str.Length == 0)
@@ -311,6 +381,12 @@ namespace MailClient
         // Same comment as above.  Normally the conversion would use an ASCII encoding in the other direction:
         //      System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
         //      return enc.GetString(byteArr);    
+
+        /// <summary>
+        /// Метод переводе из байтового массива в строку.
+        /// </summary>
+        /// <param name="byteArr">Байтовый массив для перевода.</param>
+        /// <returns></returns>
         public string ByteArrToString(byte[] byteArr)
         {
             byte val;
