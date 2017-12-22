@@ -25,8 +25,7 @@ namespace MailClient
         private static CspParameters cspp = new CspParameters();
         private static RSACryptoServiceProvider rsa;
 
-        private static AesCryptoServiceProvider aes;
-
+        private static RijndaelManaged rijndael;
         const string keyName = "Key";
         private readonly Dictionary<int, Message> messages = new Dictionary<int, Message>();
         private static Dictionary<string, string> keys = new Dictionary<string, string>();
@@ -43,10 +42,10 @@ namespace MailClient
 
             // Создание экземпляра Rijndael 
             // для симмертричного шифрования.
-            aes = new AesCryptoServiceProvider();
-            aes.BlockSize = 128;
-            aes.KeySize = 128;
-            aes.Mode = CipherMode.CBC;
+            rijndael = new RijndaelManaged();
+            rijndael.BlockSize = 128;
+            rijndael.KeySize = 128;
+            rijndael.Mode = CipherMode.CBC;
             if (File.Exists("ids")) seenUids.AddRange(File.ReadAllLines("ids"));
             if (File.Exists("contacts"))
                 foreach (string s in File.ReadAllLines("contacts"))
@@ -373,7 +372,7 @@ namespace MailClient
                     // Используется RSACryptoServiceProvider для расшифровки ключа.
                     byte[] KeyDecrypted = rsa.Decrypt(KeyEncrypted, false);
 
-                    ICryptoTransform transform = aes.CreateDecryptor(KeyDecrypted, IV);
+                    ICryptoTransform transform = rijndael.CreateDecryptor(KeyDecrypted, IV);
 
                     // Расшифровка шифрованного текст с помощью FileSteam
                     // зашифрованного файла (inFs) в FileStream
@@ -382,7 +381,7 @@ namespace MailClient
                     int count = 0;
                     int offset = 0;
 
-                    int blockSizeBytes = aes.BlockSize / 8;
+                    int blockSizeBytes = rijndael.BlockSize / 8;
                     byte[] data = new byte[blockSizeBytes];
 
 
@@ -424,7 +423,7 @@ namespace MailClient
                             inF.Read(sign, 0, lenSign);
                             inF.Read(msg, 0, lenData);
 
-                            if (rsa.VerifyData(msg, new MD5CryptoServiceProvider(), sign))
+                            if (rsa.VerifyData(msg, new SHA1CryptoServiceProvider(), sign))
                             {
                                 mailViewer.DocumentText = Encoding.UTF8.GetString(msg);
                             }
@@ -471,7 +470,7 @@ namespace MailClient
             // Добавление цифровой подписи.
             byte[] data = message.RawMessage;
 
-            byte[] signature = rsa.SignData(data, new MD5CryptoServiceProvider());
+            byte[] signature = rsa.SignData(data, new SHA1CryptoServiceProvider());
 
             int lSign = signature.Length;
 
@@ -525,7 +524,7 @@ namespace MailClient
                     inFs.Read(sign, 0, lenSign);
                     inFs.Read(data, 0, lenData);
 
-                    if (rsa.VerifyData(data, new MD5CryptoServiceProvider(), sign)) {
+                    if (rsa.VerifyData(data, new SHA1CryptoServiceProvider(), sign)) {
                         Message message = new Message(data);
                         StringBuilder tmp = new StringBuilder();
                         foreach (RfcMailAddress a in message.Headers.To)

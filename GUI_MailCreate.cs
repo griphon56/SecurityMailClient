@@ -19,8 +19,7 @@ namespace MailClient
         private static CspParameters cspp = new CspParameters();
         private static RSACryptoServiceProvider rsa;
 
-        //private static AesCryptoServiceProvider aes;
-        private static AesCryptoServiceProvider aes;
+        private static RijndaelManaged rijndael;
 
         const string keyName = "Key";
         private static Dictionary<string, string> keys = new Dictionary<string, string>();
@@ -39,10 +38,10 @@ namespace MailClient
 
             // Создание экземпляра Rijndael 
             // для симмертричного шифрования.
-            aes = new AesCryptoServiceProvider();
-            aes.BlockSize = 128;
-            aes.KeySize = 128;
-            aes.Mode = CipherMode.CBC;
+            rijndael = new RijndaelManaged();
+            rijndael.BlockSize = 128;
+            rijndael.KeySize = 128;
+            rijndael.Mode = CipherMode.CBC;
 
             if (File.Exists("contacts"))
                 foreach (string s in File.ReadAllLines("contacts"))
@@ -188,7 +187,7 @@ namespace MailClient
                 // Файл переводим в байтовый массив. 
                 byte[] msg = File.ReadAllBytes("msg");
                 // Получаем зашифрованную сигнатуру(зашифрованный хеш  смс) в байтовый массив
-                byte[] signature = rsa.SignData(msg, new MD5CryptoServiceProvider());
+                byte[] signature = rsa.SignData(msg, new SHA1CryptoServiceProvider());
                 // Получить длинну хеша.
                 int lSign = signature.Length;
                 // Перевести длинну  хеша в байтовый массив.
@@ -207,25 +206,25 @@ namespace MailClient
                 rsa.FromXmlString(keys[tbRecipient.Text]);
 
                 // Создаем объект для симметричного шифрования.
-                ICryptoTransform transform = aes.CreateEncryptor();
+                ICryptoTransform transform = rijndael.CreateEncryptor();
 
-                // Используется AesCryptoServiceProvider для шифрования ключа. 
+                // Используется RijndaelManaged для шифрования ключа. 
                 // предварительно создается rsa :
                 // rsa = new RSACryptoServiceProvider (cspp);
-                byte[] keyEncrypted = rsa.Encrypt(aes.Key, false);
+                byte[] keyEncrypted = rsa.Encrypt(rijndael.Key, false);
 
                 // Создание байт-массивов для хранения
                 // значения длины ключа и IV.
                 int lKey = keyEncrypted.Length;
                 byte[] LenK = BitConverter.GetBytes(lKey);
-                int lIV = aes.IV.Length;
+                int lIV = rijndael.IV.Length;
                 byte[] LenIV = BitConverter.GetBytes(lIV);
 
                 FileStream outFs = new FileStream("tmp", FileMode.Create);
                 outFs.Write(LenK, 0, 4);
                 outFs.Write(LenIV, 0, 4);
                 outFs.Write(keyEncrypted, 0, lKey);
-                outFs.Write(aes.IV, 0, lIV);
+                outFs.Write(rijndael.IV, 0, lIV);
 
                 // Записываем шифрованный текст используя CryptoStream.
                 CryptoStream outStreamEncrypted = new CryptoStream(outFs, transform, CryptoStreamMode.Write);
@@ -233,7 +232,7 @@ namespace MailClient
                 int offset = 0;
 
                 // blockSizeBytes can be any arbitrary size.
-                int blockSize = aes.BlockSize / 8;
+                int blockSize = rijndael.BlockSize / 8;
                 byte[] data = new byte[blockSize];
                 int bytesRead = 0;
 
@@ -336,7 +335,7 @@ namespace MailClient
                 message.To.Add(to);
                 message.IsBodyHtml = false;
                 message.Body = rsa.ToXmlString(false);
-                message.Subject = "Ключ от сообщения.";
+                message.Subject = "KEYMAIL";
 
                 try
                 {

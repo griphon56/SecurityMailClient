@@ -75,6 +75,7 @@
             this.tbRecipient.Name = "tbRecipient";
             this.tbRecipient.Size = new System.Drawing.Size(675, 20);
             this.tbRecipient.TabIndex = 0;
+            this.tbRecipient.Text = "skvortsov113@mail.ru";
             this.tbRecipient.Validated += new System.EventHandler(this.tbRecipient_Validated);
             // 
             // tbCc
