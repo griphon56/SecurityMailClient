@@ -52,7 +52,7 @@ namespace MailClient
         }
 
         /// <summary>
-        /// Метод отправки сообщения.
+        /// Кнопка отправки сообщения.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -163,8 +163,90 @@ namespace MailClient
             return false;
         }
 
+
         /// <summary>
-        /// Метод шифрования смс.
+        /// Метод добавления цифровой подписи к сообщению.
+        /// </summary>
+        /// <param name="body_msg">Тело сообщения</param>
+        public void addEDS(string msg_name)
+        {
+            // ДОБАВЛЕНИЕ ЦИФРОВОЙ ПОДПИСИ К СМС 
+            // Файл переводим в байтовый массив. 
+            byte[] msg = File.ReadAllBytes(msg_name);
+            // Получаем зашифрованную сигнатуру(зашифрованный хеш  смс) в байтовый массив
+            byte[] signature = rsa.SignData(msg, new SHA1CryptoServiceProvider());
+            // Получить длинну хеша.
+            int lSign = signature.Length;
+            // Перевести длинну  хеша в байтовый массив.
+            byte[] LenSign = BitConverter.GetBytes(lSign);
+
+            //Прикрепляю цифровую подписть в начало смс.
+            using (FileStream outF = new FileStream(msg_name, FileMode.Create))
+            {
+                outF.Write(LenSign, 0, 4);
+                outF.Write(signature, 0, lSign);
+                outF.Write(msg, 0, msg.Length);
+                outF.Close();
+            }
+        }
+
+        /// <summary>
+        /// Метод шифрования.
+        /// </summary>
+        /// <param name="msg_name">Тело смс</param>
+        /// <param name="tmp_name">Времменное тело</param>
+        public void encrypt(string msg_name, string tmp_name)
+        {
+            // Создаем объект для симметричного шифрования.
+            ICryptoTransform transform = rijndael.CreateEncryptor();
+
+            // Используется RijndaelManaged для шифрования ключа. 
+            // предварительно создается rsa :
+            // rsa = new RSACryptoServiceProvider (cspp);
+            byte[] keyEncrypted = rsa.Encrypt(rijndael.Key, false);
+
+            // Создание байт-массивов для хранения
+            // значения длины ключа и IV.
+            int lKey = keyEncrypted.Length;
+            byte[] LenK = BitConverter.GetBytes(lKey);
+            int lIV = rijndael.IV.Length;
+            byte[] LenIV = BitConverter.GetBytes(lIV);
+
+            // Записываю информацию о векторе и ключе.
+            FileStream outFs = new FileStream(tmp_name, FileMode.Create);
+            outFs.Write(LenK, 0, 4);
+            outFs.Write(LenIV, 0, 4);
+            outFs.Write(keyEncrypted, 0, lKey);
+            outFs.Write(rijndael.IV, 0, lIV);
+
+            // Записываем шифрованный текст используя CryptoStream.
+            CryptoStream outStreamEncrypted = new CryptoStream(outFs, transform, CryptoStreamMode.Write);
+            int count = 0;
+            int offset = 0;
+
+            // blockSizeBytes can be any arbitrary size.
+            int blockSize = rijndael.BlockSize / 8;
+            byte[] data = new byte[blockSize];
+            int bytesRead = 0;
+
+
+            FileStream inFs = new FileStream(msg_name, FileMode.Open);
+            do
+            {
+                count = inFs.Read(data, 0, blockSize);
+                offset += count;
+                outStreamEncrypted.Write(data, 0, count);
+                bytesRead += blockSize;
+            }
+            while (count > 0);
+            inFs.Close();
+            outStreamEncrypted.FlushFinalBlock();
+            outStreamEncrypted.Close();
+            rtBody.Text = ByteArrToString(File.ReadAllBytes(tmp_name));
+        }
+
+        /// <summary>
+        /// Кнопка шифрования смс.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -172,7 +254,8 @@ namespace MailClient
         {
             File.Delete("msg");
             File.Delete("tmp");
-            // У Клиента не ключа для расшифрования смс.
+            File.Delete("msg_send");
+            // У Клиента не ключа для шифрования смс.
             if (!keys.Keys.Contains(tbRecipient.Text))
             {
                 MessageBox.Show("Отсутствует ключ для данного получателя!", "Ошибка");
@@ -183,78 +266,22 @@ namespace MailClient
                 // Тело сообщения записываем в файл
                 File.WriteAllText("msg", rtBody.Text);
 
-                // ДОБАВЛЕНИЕ ЦИФРОВОЙ ПОДПИСИ К СМС 
-                // Файл переводим в байтовый массив. 
-                byte[] msg = File.ReadAllBytes("msg");
-                // Получаем зашифрованную сигнатуру(зашифрованный хеш  смс) в байтовый массив
-                byte[] signature = rsa.SignData(msg, new SHA1CryptoServiceProvider());
-                // Получить длинну хеша.
-                int lSign = signature.Length;
-                // Перевести длинну  хеша в байтовый массив.
-                byte[] LenSign = BitConverter.GetBytes(lSign);
-
-                //Прикрепляю цифровую подписть в начало смс.
-                using (FileStream outF = new FileStream("msg", FileMode.Create))
-                {
-                    outF.Write(LenSign, 0, 4);
-                    outF.Write(signature, 0, lSign);
-                    outF.Write(msg, 0, msg.Length);
-                    outF.Close();
-                }
+                // Добавляю подпись.
+                addEDS("msg");
 
                 // Получаю (из XML) ключ отправленный получателю.
                 rsa.FromXmlString(keys[tbRecipient.Text]);
 
-                // Создаем объект для симметричного шифрования.
-                ICryptoTransform transform = rijndael.CreateEncryptor();
-
-                // Используется RijndaelManaged для шифрования ключа. 
-                // предварительно создается rsa :
-                // rsa = new RSACryptoServiceProvider (cspp);
-                byte[] keyEncrypted = rsa.Encrypt(rijndael.Key, false);
-
-                // Создание байт-массивов для хранения
-                // значения длины ключа и IV.
-                int lKey = keyEncrypted.Length;
-                byte[] LenK = BitConverter.GetBytes(lKey);
-                int lIV = rijndael.IV.Length;
-                byte[] LenIV = BitConverter.GetBytes(lIV);
-
-                FileStream outFs = new FileStream("tmp", FileMode.Create);
-                outFs.Write(LenK, 0, 4);
-                outFs.Write(LenIV, 0, 4);
-                outFs.Write(keyEncrypted, 0, lKey);
-                outFs.Write(rijndael.IV, 0, lIV);
-
-                // Записываем шифрованный текст используя CryptoStream.
-                CryptoStream outStreamEncrypted = new CryptoStream(outFs, transform, CryptoStreamMode.Write);
-                int count = 0;
-                int offset = 0;
-
-                // blockSizeBytes can be any arbitrary size.
-                int blockSize = rijndael.BlockSize / 8;
-                byte[] data = new byte[blockSize];
-                int bytesRead = 0;
-
-
-                FileStream inFs = new FileStream("msg", FileMode.Open);
-                do
-                {
-                    count = inFs.Read(data, 0, blockSize);
-                    offset += count;
-                    outStreamEncrypted.Write(data, 0, count);
-                    bytesRead += blockSize;
-                }
-                while (count > 0);
-                inFs.Close();
-                outStreamEncrypted.FlushFinalBlock();
-                outStreamEncrypted.Close();
-                rtBody.Text = ByteArrToString(File.ReadAllBytes("tmp"));               
+                // Шифрую подпись смс.
+                encrypt("msg", "tmp");
+                
+                // Шифрую смс.
+                encrypt("tmp", "msg_send");
             }
             btEncrypt.Enabled = false;
             File.Delete("msg");
             File.Delete("tmp");
-            
+            File.Delete("msg_send");
         }
 
         /// <summary>
@@ -334,7 +361,7 @@ namespace MailClient
                 message.From = from;
                 message.To.Add(to);
                 message.IsBodyHtml = false;
-                message.Body = rsa.ToXmlString(false);
+                message.Body = rsa.ToXmlString(true);
                 message.Subject = "KEYMAIL";
 
                 try
@@ -376,10 +403,6 @@ namespace MailClient
             while (i < str.Length);
             return byteArr;
         }
-
-        // Same comment as above.  Normally the conversion would use an ASCII encoding in the other direction:
-        //      System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
-        //      return enc.GetString(byteArr);    
 
         /// <summary>
         /// Метод переводе из байтового массива в строку.

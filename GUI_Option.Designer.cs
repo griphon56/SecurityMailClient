@@ -136,11 +136,11 @@
             this.cbAuth.UseVisualStyleBackColor = true;
             this.cbAuth.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
-            // lbSubject
+            // label3
             // 
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(3, 3);
-            this.label3.Name = "lbSubject";
+            this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(107, 13);
             this.label3.TabIndex = 4;
             this.label3.Text = "Настройки сервера";
@@ -159,20 +159,20 @@
             this.tbHost.Size = new System.Drawing.Size(100, 20);
             this.tbHost.TabIndex = 2;
             // 
-            // lbTo
+            // label2
             // 
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(45, 55);
-            this.label2.Name = "lbTo";
+            this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(32, 13);
             this.label2.TabIndex = 1;
             this.label2.Text = "Порт";
             // 
-            // lbFrom
+            // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(3, 29);
-            this.label1.Name = "lbFrom";
+            this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(76, 13);
             this.label1.TabIndex = 0;
             this.label1.Text = "SMTP сервер";
@@ -295,6 +295,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.ButtonHighlight;
             this.ClientSize = new System.Drawing.Size(224, 244);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.tabControl1);

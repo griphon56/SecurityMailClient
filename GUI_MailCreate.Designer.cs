@@ -37,7 +37,6 @@
             this.lbSublect = new System.Windows.Forms.Label();
             this.tbSubject = new System.Windows.Forms.TextBox();
             this.errorProvider1 = new System.Windows.Forms.ErrorProvider(this.components);
-            this.btEncrypt = new System.Windows.Forms.Button();
             this.lbTo = new System.Windows.Forms.Label();
             this.lbCopy = new System.Windows.Forms.Label();
             this.errorProvider2 = new System.Windows.Forms.ErrorProvider(this.components);
@@ -46,22 +45,26 @@
             this.btAddAttachment = new System.Windows.Forms.Button();
             this.btDeleteAttachment = new System.Windows.Forms.Button();
             this.lbAttachmentsCount = new System.Windows.Forms.Label();
-            this.btSendKey = new System.Windows.Forms.Button();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.безопасностьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.отправитьКлючToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.btEncrypt = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider2)).BeginInit();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // rtBody
             // 
-            this.rtBody.Location = new System.Drawing.Point(12, 120);
+            this.rtBody.Location = new System.Drawing.Point(16, 136);
             this.rtBody.Name = "rtBody";
-            this.rtBody.Size = new System.Drawing.Size(832, 369);
+            this.rtBody.Size = new System.Drawing.Size(655, 254);
             this.rtBody.TabIndex = 3;
             this.rtBody.Text = "";
             // 
             // btSend
             // 
-            this.btSend.Location = new System.Drawing.Point(12, 67);
+            this.btSend.Location = new System.Drawing.Point(567, 403);
             this.btSend.Name = "btSend";
             this.btSend.Size = new System.Drawing.Size(104, 26);
             this.btSend.TabIndex = 5;
@@ -71,25 +74,25 @@
             // 
             // tbRecipient
             // 
-            this.tbRecipient.Location = new System.Drawing.Point(169, 14);
+            this.tbRecipient.Location = new System.Drawing.Point(122, 27);
             this.tbRecipient.Name = "tbRecipient";
-            this.tbRecipient.Size = new System.Drawing.Size(675, 20);
+            this.tbRecipient.Size = new System.Drawing.Size(549, 20);
             this.tbRecipient.TabIndex = 0;
             this.tbRecipient.Text = "skvortsov113@mail.ru";
             this.tbRecipient.Validated += new System.EventHandler(this.tbRecipient_Validated);
             // 
             // tbCc
             // 
-            this.tbCc.Location = new System.Drawing.Point(169, 41);
+            this.tbCc.Location = new System.Drawing.Point(122, 54);
             this.tbCc.Name = "tbCc";
-            this.tbCc.Size = new System.Drawing.Size(675, 20);
+            this.tbCc.Size = new System.Drawing.Size(549, 20);
             this.tbCc.TabIndex = 1;
             this.tbCc.Validated += new System.EventHandler(this.tbCc_Validated);
             // 
             // lbSublect
             // 
             this.lbSublect.AutoSize = true;
-            this.lbSublect.Location = new System.Drawing.Point(122, 70);
+            this.lbSublect.Location = new System.Drawing.Point(67, 83);
             this.lbSublect.Name = "lbSublect";
             this.lbSublect.Size = new System.Drawing.Size(37, 13);
             this.lbSublect.TabIndex = 7;
@@ -97,29 +100,19 @@
             // 
             // tbSubject
             // 
-            this.tbSubject.Location = new System.Drawing.Point(169, 67);
+            this.tbSubject.Location = new System.Drawing.Point(122, 80);
             this.tbSubject.Name = "tbSubject";
-            this.tbSubject.Size = new System.Drawing.Size(675, 20);
+            this.tbSubject.Size = new System.Drawing.Size(549, 20);
             this.tbSubject.TabIndex = 2;
             // 
             // errorProvider1
             // 
             this.errorProvider1.ContainerControl = this;
             // 
-            // btEncrypt
-            // 
-            this.btEncrypt.Location = new System.Drawing.Point(12, 12);
-            this.btEncrypt.Name = "btEncrypt";
-            this.btEncrypt.Size = new System.Drawing.Size(76, 23);
-            this.btEncrypt.TabIndex = 4;
-            this.btEncrypt.Text = "Шифровать";
-            this.btEncrypt.UseVisualStyleBackColor = true;
-            this.btEncrypt.Click += new System.EventHandler(this.btEncrypt_Click);
-            // 
             // lbTo
             // 
             this.lbTo.AutoSize = true;
-            this.lbTo.Location = new System.Drawing.Point(94, 17);
+            this.lbTo.Location = new System.Drawing.Point(39, 30);
             this.lbTo.Name = "lbTo";
             this.lbTo.Size = new System.Drawing.Size(69, 13);
             this.lbTo.TabIndex = 8;
@@ -129,7 +122,7 @@
             // lbCopy
             // 
             this.lbCopy.AutoSize = true;
-            this.lbCopy.Location = new System.Drawing.Point(118, 44);
+            this.lbCopy.Location = new System.Drawing.Point(63, 57);
             this.lbCopy.Name = "lbCopy";
             this.lbCopy.Size = new System.Drawing.Size(41, 13);
             this.lbCopy.TabIndex = 9;
@@ -143,23 +136,23 @@
             // cbAttachments
             // 
             this.cbAttachments.FormattingEnabled = true;
-            this.cbAttachments.Location = new System.Drawing.Point(190, 93);
+            this.cbAttachments.Location = new System.Drawing.Point(122, 106);
             this.cbAttachments.Name = "cbAttachments";
-            this.cbAttachments.Size = new System.Drawing.Size(492, 21);
+            this.cbAttachments.Size = new System.Drawing.Size(387, 21);
             this.cbAttachments.TabIndex = 10;
             // 
             // lbAttachments
             // 
             this.lbAttachments.AutoSize = true;
-            this.lbAttachments.Location = new System.Drawing.Point(30, 96);
+            this.lbAttachments.Location = new System.Drawing.Point(13, 107);
             this.lbAttachments.Name = "lbAttachments";
-            this.lbAttachments.Size = new System.Drawing.Size(129, 13);
+            this.lbAttachments.Size = new System.Drawing.Size(91, 13);
             this.lbAttachments.TabIndex = 11;
-            this.lbAttachments.Text = "Прикрепленные файлы:";
+            this.lbAttachments.Text = "Прикрепленных:";
             // 
             // btAddAttachment
             // 
-            this.btAddAttachment.Location = new System.Drawing.Point(688, 91);
+            this.btAddAttachment.Location = new System.Drawing.Point(515, 107);
             this.btAddAttachment.Name = "btAddAttachment";
             this.btAddAttachment.Size = new System.Drawing.Size(75, 23);
             this.btAddAttachment.TabIndex = 12;
@@ -169,7 +162,7 @@
             // 
             // btDeleteAttachment
             // 
-            this.btDeleteAttachment.Location = new System.Drawing.Point(769, 91);
+            this.btDeleteAttachment.Location = new System.Drawing.Point(596, 107);
             this.btDeleteAttachment.Name = "btDeleteAttachment";
             this.btDeleteAttachment.Size = new System.Drawing.Size(75, 23);
             this.btDeleteAttachment.TabIndex = 13;
@@ -180,28 +173,51 @@
             // lbAttachmentsCount
             // 
             this.lbAttachmentsCount.AutoSize = true;
-            this.lbAttachmentsCount.Location = new System.Drawing.Point(171, 96);
+            this.lbAttachmentsCount.Location = new System.Drawing.Point(103, 109);
             this.lbAttachmentsCount.Name = "lbAttachmentsCount";
             this.lbAttachmentsCount.Size = new System.Drawing.Size(13, 13);
             this.lbAttachmentsCount.TabIndex = 14;
             this.lbAttachmentsCount.Text = "0";
             // 
-            // btSendKey
+            // menuStrip1
             // 
-            this.btSendKey.Location = new System.Drawing.Point(12, 39);
-            this.btSendKey.Name = "btSendKey";
-            this.btSendKey.Size = new System.Drawing.Size(100, 23);
-            this.btSendKey.TabIndex = 15;
-            this.btSendKey.Text = "Отправить ключ";
-            this.btSendKey.UseVisualStyleBackColor = true;
-            this.btSendKey.Click += new System.EventHandler(this.btSendKey_Click);
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.безопасностьToolStripMenuItem});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(684, 24);
+            this.menuStrip1.TabIndex = 16;
+            this.menuStrip1.Text = "menuStrip1";
+            // 
+            // безопасностьToolStripMenuItem
+            // 
+            this.безопасностьToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.отправитьКлючToolStripMenuItem,
+            this.btEncrypt});
+            this.безопасностьToolStripMenuItem.Name = "безопасностьToolStripMenuItem";
+            this.безопасностьToolStripMenuItem.Size = new System.Drawing.Size(94, 20);
+            this.безопасностьToolStripMenuItem.Text = "Безопасность";
+            // 
+            // отправитьКлючToolStripMenuItem
+            // 
+            this.отправитьКлючToolStripMenuItem.Name = "отправитьКлючToolStripMenuItem";
+            this.отправитьКлючToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.отправитьКлючToolStripMenuItem.Text = "Отправить ключ";
+            this.отправитьКлючToolStripMenuItem.Click += new System.EventHandler(this.btSendKey_Click);
+            // 
+            // btEncrypt
+            // 
+            this.btEncrypt.Name = "btEncrypt";
+            this.btEncrypt.Size = new System.Drawing.Size(165, 22);
+            this.btEncrypt.Text = "Шифровать";
+            this.btEncrypt.Click += new System.EventHandler(this.btEncrypt_Click);
             // 
             // GUI_MailCreate
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(872, 501);
-            this.Controls.Add(this.btSendKey);
+            this.BackColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.ClientSize = new System.Drawing.Size(684, 441);
             this.Controls.Add(this.lbAttachmentsCount);
             this.Controls.Add(this.btDeleteAttachment);
             this.Controls.Add(this.btAddAttachment);
@@ -209,19 +225,22 @@
             this.Controls.Add(this.cbAttachments);
             this.Controls.Add(this.lbCopy);
             this.Controls.Add(this.lbTo);
-            this.Controls.Add(this.btEncrypt);
             this.Controls.Add(this.tbSubject);
             this.Controls.Add(this.lbSublect);
             this.Controls.Add(this.tbCc);
             this.Controls.Add(this.tbRecipient);
             this.Controls.Add(this.btSend);
             this.Controls.Add(this.rtBody);
+            this.Controls.Add(this.menuStrip1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MainMenuStrip = this.menuStrip1;
             this.Name = "GUI_MailCreate";
-            this.Text = "Новое письмо";
+            this.Text = "Новое сообщение";
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider2)).EndInit();
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -236,7 +255,6 @@
         private System.Windows.Forms.Label lbSublect;
         private System.Windows.Forms.TextBox tbSubject;
         private System.Windows.Forms.ErrorProvider errorProvider1;
-        private System.Windows.Forms.Button btEncrypt;
         private System.Windows.Forms.Label lbCopy;
         private System.Windows.Forms.Label lbTo;
         private System.Windows.Forms.ErrorProvider errorProvider2;
@@ -245,6 +263,9 @@
         private System.Windows.Forms.Button btAddAttachment;
         private System.Windows.Forms.Button btDeleteAttachment;
         private System.Windows.Forms.Label lbAttachmentsCount;
-        private System.Windows.Forms.Button btSendKey;
+        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem безопасностьToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem отправитьКлючToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem btEncrypt;
     }
 }

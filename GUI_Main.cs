@@ -29,7 +29,7 @@ namespace MailClient
         const string keyName = "Key";
         private readonly Dictionary<int, Message> messages = new Dictionary<int, Message>();
         private static Dictionary<string, string> keys = new Dictionary<string, string>();
-
+        bool fl = true;
         List<string> seenUids = new List<string>();
 
         public GUI_Main()
@@ -105,6 +105,7 @@ namespace MailClient
         private void tbstGet_Click(object sender, EventArgs e)
         {
             ReceiveMails();
+            lbTo.Visible = Visible;
         }
 
         /// <summary>
@@ -317,7 +318,119 @@ namespace MailClient
         }
 
         /// <summary>
-        /// Метод расшифровки смс.
+        /// Проверка подписи смс.
+        /// </summary>
+        /// <param name="msg_name">Тело смс</param>
+        public void verifyEDS(string msg_name)
+        {
+            rsa.FromXmlString(keys[new MailAddress(tbFrom.Text).Address]);
+
+            using (FileStream inF = new FileStream(msg_name, FileMode.Open))
+            {
+                byte[] LenSign = new byte[4];
+                inF.Read(LenSign, 0, 4);
+
+                int lenSign = BitConverter.ToInt32(LenSign, 0);
+
+                int startData = lenSign + 4;
+                int lenData = (int)inF.Length - startData;
+
+                byte[] sign = new byte[lenSign];
+                byte[] msg = new byte[lenData];
+
+                inF.Read(sign, 0, lenSign);
+                inF.Read(msg, 0, lenData);
+
+                if (rsa.VerifyData(msg, new SHA1CryptoServiceProvider(), sign))
+                {
+                    mailViewer.DocumentText = Encoding.UTF8.GetString(msg);
+                    MessageBox.Show("Проверка пройдена!", "Успех");
+                }
+                else MessageBox.Show("Ошибка проверки подписи письма!", "Ошибка");
+                inF.Close();
+        }
+    }
+
+        /// <summary>
+        /// Дешифрование сообщения
+        /// </summary>
+        /// <param name="tmp_name">Временное тело смс</param>
+        /// <param name="msg_name">Тело смс</param>
+        public void dencrypt(string tmp_name, string msg_name)
+        {
+            rsa = new RSACryptoServiceProvider(cspp);
+            rsa.PersistKeyInCsp = true;
+            // Записываем тело смс в байтовый массив. 
+            if(fl)
+                File.WriteAllBytes(tmp_name, StrToByteArray(mailViewer.DocumentText.TrimEnd("\r\n".ToCharArray())));
+
+            // Используем объект FileStream для чтения зашифрованного
+            // файла (inFs) и сохранить дешифрованный файл (outFs)
+            FileStream inFs = new FileStream(tmp_name, FileMode.Open);
+
+            // Создаем массивы байтов, чтобы получить длину
+            // зашифрованный ключ и IV.
+            // Эти значения сохранялись как 4 байта каждый
+            // в начале зашифрованного пакета
+            byte[] LenK = new byte[4];
+            inFs.Read(LenK, 0, 4);
+            byte[] LenIV = new byte[4];
+            inFs.Read(LenIV, 0, 4);
+
+            int lenK = BitConverter.ToInt32(LenK, 0);
+            int lenIV = BitConverter.ToInt32(LenIV, 0);
+
+            // Определяем начальную позицию 
+            // зашифрованного текста (startS) и его длины (lenC).
+            int startC = lenK + lenIV + 8;
+            int lenC = (int)inFs.Length - startC;
+
+            // Создаем байтовые массивы для
+            // зашифрованный ключ , IV и шифрованный текст.
+            byte[] KeyEncrypted = new byte[lenK];
+            byte[] IV = new byte[lenIV];
+
+            // Извлечение ключа и IV
+            // начиная с 8-го индекса
+            // после значений длины.
+            inFs.Seek(8, SeekOrigin.Begin);
+            inFs.Read(KeyEncrypted, 0, lenK);
+            inFs.Seek(8 + lenK, SeekOrigin.Begin);
+            inFs.Read(IV, 0, lenIV);
+
+            // Используется RSACryptoServiceProvider для расшифровки ключа.
+            byte[] KeyDecrypted = rsa.Decrypt(KeyEncrypted, false);
+
+            ICryptoTransform transform = rijndael.CreateDecryptor(KeyDecrypted, IV);
+
+            // Расшифровка шифрованного текст с помощью FileSteam
+            // зашифрованного файла (inFs) в FileStream
+            // для дешифрованного файла (outFs).
+            FileStream outFs = new FileStream(msg_name, FileMode.Create);
+            int count = 0;
+            int offset = 0;
+
+            int blockSizeBytes = rijndael.BlockSize / 8;
+            byte[] data = new byte[blockSizeBytes];
+
+            inFs.Seek(startC, SeekOrigin.Begin);
+            CryptoStream outStreamDecrypted = new CryptoStream(outFs, transform, CryptoStreamMode.Write);
+            do
+            {
+                count = inFs.Read(data, 0, blockSizeBytes);
+                offset += count;
+                outStreamDecrypted.Write(data, 0, count);
+            }
+            while (count > 0);
+
+            outStreamDecrypted.FlushFinalBlock();
+            outStreamDecrypted.Close();
+            outFs.Close();
+            inFs.Close();
+        }
+
+        /// <summary>
+        /// Кнопка расшифровки смс.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -325,80 +438,17 @@ namespace MailClient
         {
             File.Delete("msg");
             File.Delete("tmp");
-            
+            File.Delete("msg_send");
+
             if (mailViewer.DocumentText.Length != 0)
             {
                 try
-                {
-                    rsa = new RSACryptoServiceProvider(cspp);
-                    rsa.PersistKeyInCsp = true;
-                    // Записываем тело смс в байтовый массив. 
-                    File.WriteAllBytes("tmp", StrToByteArray(mailViewer.DocumentText.TrimEnd("\r\n".ToCharArray())));
-                   
-                    // Используем объект FileStream для чтения зашифрованного
-                    // файла (inFs) и сохранить дешифрованный файл (outFs)
-                    FileStream inFs = new FileStream("tmp", FileMode.Open);
-                    
-                    // Создаем массивы байтов, чтобы получить длину
-                    // зашифрованный ключ и IV.
-                    // Эти значения сохранялись как 4 байта каждый
-                    // в начале зашифрованного пакета
-                    byte[] LenK = new byte[4];
-                    inFs.Read(LenK, 0, 4);
-                    byte[] LenIV = new byte[4];
-                    inFs.Read(LenIV, 0, 4);
+                {               
+                    // Расшифровываю смс.
+                    dencrypt("msg_send", "tmp");
+                    fl = false;
 
-                    int lenK = BitConverter.ToInt32(LenK, 0);
-                    int lenIV = BitConverter.ToInt32(LenIV, 0);
-
-                    // Определяем начальную позицию 
-                    // зашифрованного текста (startS) и его длины (lenC).
-                    int startC = lenK + lenIV + 8;
-                    int lenC = (int)inFs.Length - startC;
-
-                    // Создаем байтовые массивы для
-                    // зашифрованный ключ , IV и шифрованный текст.
-                    byte[] KeyEncrypted = new byte[lenK];
-                    byte[] IV = new byte[lenIV];
-
-                    // Извлечение ключа и IV
-                    // начиная с 8-го индекса
-                    // после значений длины.
-                    inFs.Seek(8, SeekOrigin.Begin);
-                    inFs.Read(KeyEncrypted, 0, lenK);
-                    inFs.Seek(8 + lenK, SeekOrigin.Begin);
-                    inFs.Read(IV, 0, lenIV);
-
-                    // Используется RSACryptoServiceProvider для расшифровки ключа.
-                    byte[] KeyDecrypted = rsa.Decrypt(KeyEncrypted, false);
-
-                    ICryptoTransform transform = rijndael.CreateDecryptor(KeyDecrypted, IV);
-
-                    // Расшифровка шифрованного текст с помощью FileSteam
-                    // зашифрованного файла (inFs) в FileStream
-                    // для дешифрованного файла (outFs).
-                    FileStream outFs = new FileStream("msg", FileMode.Create);
-                    int count = 0;
-                    int offset = 0;
-
-                    int blockSizeBytes = rijndael.BlockSize / 8;
-                    byte[] data = new byte[blockSizeBytes];
-
-
-                    inFs.Seek(startC, SeekOrigin.Begin);
-                    CryptoStream outStreamDecrypted = new CryptoStream(outFs, transform, CryptoStreamMode.Write);
-                    do
-                    {
-                        count = inFs.Read(data, 0, blockSizeBytes);
-                        offset += count;
-                        outStreamDecrypted.Write(data, 0, count);
-                    }
-                    while (count > 0);
-
-                    outStreamDecrypted.FlushFinalBlock();
-                    outStreamDecrypted.Close();
-                    outFs.Close();
-                    inFs.Close();
+                    dencrypt("tmp", "msg");
                     if (!keys.Keys.Contains(new MailAddress(tbFrom.Text).Address))
                     {
                         MessageBox.Show("Отсутствует ключ для данного отправителя!", "Ошибка");
@@ -406,32 +456,8 @@ namespace MailClient
                     else
                     {
                         // Проверка цифровой подписи.
-                        rsa.FromXmlString(keys[new MailAddress(tbFrom.Text).Address]);
-                        using (FileStream inF = new FileStream("msg", FileMode.Open))
-                        {
-                            byte[] LenSign = new byte[4];
-                            inF.Read(LenSign, 0, 4);
-
-                            int lenSign = BitConverter.ToInt32(LenSign, 0);
-
-                            int startData = lenSign + 4;
-                            int lenData = (int)inF.Length - startData;
-
-                            byte[] sign = new byte[lenSign];
-                            byte[] msg = new byte[lenData];
-
-                            inF.Read(sign, 0, lenSign);
-                            inF.Read(msg, 0, lenData);
-
-                            if (rsa.VerifyData(msg, new SHA1CryptoServiceProvider(), sign))
-                            {
-                                mailViewer.DocumentText = Encoding.UTF8.GetString(msg);
-                            }
-                            else MessageBox.Show("Ошибка проверки подписи письма!", "Ошибка");
-                            inF.Close();
-                        }
-                    }
-                    
+                        verifyEDS("msg");
+                    }      
                 }
                 catch (Exception ex)
                 {
@@ -440,6 +466,7 @@ namespace MailClient
             }
             File.Delete("msg");
             File.Delete("tmp");
+            File.Delete("msg_send");
         }
 
         /// <summary>
@@ -465,9 +492,9 @@ namespace MailClient
             rsa.PersistKeyInCsp = true;
             Message message = messages[GetMessageNumberFromSelectedNode(listMessages.SelectedNode)];
             string name = "Messages/" + message.Headers.MessageId + ".mmsg";
-            FileInfo f = new FileInfo(name);            
+            FileInfo f = new FileInfo(name);
 
-            // Добавление цифровой подписи.
+            //Добавление цифровой подписи.
             byte[] data = message.RawMessage;
 
             byte[] signature = rsa.SignData(data, new SHA1CryptoServiceProvider());
@@ -483,6 +510,8 @@ namespace MailClient
                 outFs.Write(data, 0, data.Length);
                 outFs.Close();
             }
+
+            MessageBox.Show("Сообщение сохранено на диск.","Успех");
         }
 
         /// <summary>
@@ -549,8 +578,6 @@ namespace MailClient
                             else
                                 mailViewer.DocumentText = "<<OpenPop>> Cannot find a text version body in this message to show <<OpenPop>>";
                         }
-
-
                     }
                     else MessageBox.Show("Ошибка проверки подписи файла письма!","Ошибка");
                 }
