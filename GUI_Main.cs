@@ -491,7 +491,10 @@ namespace MailClient
             rsa = new RSACryptoServiceProvider(cspp);
             rsa.PersistKeyInCsp = true;
             Message message = messages[GetMessageNumberFromSelectedNode(listMessages.SelectedNode)];
-            string name = "Messages/" + message.Headers.MessageId + ".mmsg";
+            // Создаю директорию для нового пользователя
+            DirectoryInfo di = Directory.CreateDirectory("Messages_" + tbTo.Text);
+
+            string name = "Messages_"+tbTo.Text+"/" + message.Headers.MessageId + ".mmsg";
             FileInfo f = new FileInfo(name);
 
             //Добавление цифровой подписи.
