@@ -49,8 +49,7 @@
             this.открытьСохраненноеСмсToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.правкаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.безопасностьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tbstCrypto = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
@@ -65,14 +64,21 @@
             this.lbAttachmentsCount = new System.Windows.Forms.Label();
             this.btDownload = new System.Windows.Forms.Button();
             this.mailViewer = new System.Windows.Forms.WebBrowser();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.messageBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.panel1 = new System.Windows.Forms.Panel();
             this.button1 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
+            this.messageBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.pAuth = new System.Windows.Forms.Panel();
+            this.label1 = new System.Windows.Forms.Label();
+            this.btnSave = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.tbPopPassword = new System.Windows.Forms.TextBox();
+            this.tbPopUsername = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.messageBindingSource)).BeginInit();
+            this.pAuth.SuspendLayout();
             this.SuspendLayout();
             // 
             // fileToolStripMenuItem
@@ -141,13 +147,12 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem1,
-            this.правкаToolStripMenuItem,
+            this.settingsToolStripMenuItem,
             this.безопасностьToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(876, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(869, 24);
             this.menuStrip1.TabIndex = 6;
-            this.menuStrip1.Text = "menuStrip1";
             // 
             // fileToolStripMenuItem1
             // 
@@ -210,20 +215,12 @@
             this.exitToolStripMenuItem1.Text = "Выход";
             this.exitToolStripMenuItem1.Click += new System.EventHandler(this.exitToolStripMenuItem1_Click);
             // 
-            // правкаToolStripMenuItem
+            // settingsToolStripMenuItem
             // 
-            this.правкаToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.настройкиToolStripMenuItem});
-            this.правкаToolStripMenuItem.Name = "правкаToolStripMenuItem";
-            this.правкаToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
-            this.правкаToolStripMenuItem.Text = "Правка";
-            // 
-            // настройкиToolStripMenuItem
-            // 
-            this.настройкиToolStripMenuItem.Name = "настройкиToolStripMenuItem";
-            this.настройкиToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
-            this.настройкиToolStripMenuItem.Text = "Настройки";
-            this.настройкиToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem1_Click);
+            this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(79, 20);
+            this.settingsToolStripMenuItem.Text = "Настройки";
+            this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
             // 
             // безопасностьToolStripMenuItem
             // 
@@ -246,9 +243,9 @@
             this.progressBar,
             this.totalMessages1,
             this.totalMessagesCount});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 527);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 523);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(876, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(869, 22);
             this.statusStrip1.TabIndex = 8;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -302,11 +299,11 @@
             this.tbSubject.BackColor = System.Drawing.SystemColors.ButtonHighlight;
             this.tbSubject.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.tbSubject.Enabled = false;
-            this.tbSubject.Font = new System.Drawing.Font("Microsoft JhengHei UI", 27.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbSubject.Font = new System.Drawing.Font("Microsoft JhengHei UI", 22F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbSubject.Location = new System.Drawing.Point(328, 63);
             this.tbSubject.Name = "tbSubject";
             this.tbSubject.ReadOnly = true;
-            this.tbSubject.Size = new System.Drawing.Size(530, 47);
+            this.tbSubject.Size = new System.Drawing.Size(530, 38);
             this.tbSubject.TabIndex = 13;
             // 
             // cbAttachments
@@ -337,13 +334,15 @@
             // 
             // btDownload
             // 
+            this.btDownload.BackColor = System.Drawing.Color.LightGreen;
             this.btDownload.Enabled = false;
+            this.btDownload.ForeColor = System.Drawing.Color.Black;
             this.btDownload.Location = new System.Drawing.Point(782, 492);
             this.btDownload.Name = "btDownload";
             this.btDownload.Size = new System.Drawing.Size(76, 23);
             this.btDownload.TabIndex = 18;
-            this.btDownload.Text = "Скачать";
-            this.btDownload.UseVisualStyleBackColor = true;
+            this.btDownload.Text = "СКАЧАТЬ";
+            this.btDownload.UseVisualStyleBackColor = false;
             this.btDownload.Click += new System.EventHandler(this.btDownload_Click);
             // 
             // mailViewer
@@ -353,17 +352,6 @@
             this.mailViewer.Name = "mailViewer";
             this.mailViewer.Size = new System.Drawing.Size(533, 259);
             this.mailViewer.TabIndex = 19;
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = global::MailClient.Properties.Resources.loading1;
-            this.pictureBox1.InitialImage = ((System.Drawing.Image)(resources.GetObject("pictureBox1.InitialImage")));
-            this.pictureBox1.Location = new System.Drawing.Point(328, 26);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(35, 31);
-            this.pictureBox1.TabIndex = 20;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.Click += new System.EventHandler(this.tbstGet_Click);
             // 
             // panel1
             // 
@@ -381,7 +369,7 @@
             this.button1.FlatAppearance.MouseOverBackColor = System.Drawing.Color.DarkRed;
             this.button1.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button1.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.button1.Location = new System.Drawing.Point(369, 27);
+            this.button1.Location = new System.Drawing.Point(412, 26);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(85, 30);
             this.button1.TabIndex = 22;
@@ -389,15 +377,98 @@
             this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.newMailToolStripMenuItem_Click);
             // 
+            // button2
+            // 
+            this.button2.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.button2.Font = new System.Drawing.Font("Microsoft YaHei", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.button2.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.button2.Location = new System.Drawing.Point(320, 26);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(86, 30);
+            this.button2.TabIndex = 23;
+            this.button2.Text = "ОБНОВИТЬ";
+            this.button2.UseVisualStyleBackColor = false;
+            this.button2.Click += new System.EventHandler(this.tbstGet_Click);
+            // 
+            // pAuth
+            // 
+            this.pAuth.Controls.Add(this.label1);
+            this.pAuth.Controls.Add(this.btnSave);
+            this.pAuth.Controls.Add(this.label4);
+            this.pAuth.Controls.Add(this.label5);
+            this.pAuth.Controls.Add(this.tbPopPassword);
+            this.pAuth.Controls.Add(this.tbPopUsername);
+            this.pAuth.Location = new System.Drawing.Point(0, 0);
+            this.pAuth.Name = "pAuth";
+            this.pAuth.Size = new System.Drawing.Size(869, 559);
+            this.pAuth.TabIndex = 24;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label1.Location = new System.Drawing.Point(290, 128);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(280, 39);
+            this.label1.TabIndex = 26;
+            this.label1.Text = "АВТОРИЗАЦИЯ";
+            // 
+            // btnSave
+            // 
+            this.btnSave.BackColor = System.Drawing.SystemColors.ButtonFace;
+            this.btnSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnSave.Location = new System.Drawing.Point(328, 304);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(200, 30);
+            this.btnSave.TabIndex = 25;
+            this.btnSave.Text = "Вход";
+            this.btnSave.UseVisualStyleBackColor = false;
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label4.Location = new System.Drawing.Point(325, 239);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(61, 18);
+            this.label4.TabIndex = 24;
+            this.label4.Text = "Пароль";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label5.Location = new System.Drawing.Point(325, 184);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(50, 18);
+            this.label5.TabIndex = 23;
+            this.label5.Text = "Логин";
+            // 
+            // tbPopPassword
+            // 
+            this.tbPopPassword.Location = new System.Drawing.Point(328, 260);
+            this.tbPopPassword.Name = "tbPopPassword";
+            this.tbPopPassword.PasswordChar = '*';
+            this.tbPopPassword.Size = new System.Drawing.Size(200, 20);
+            this.tbPopPassword.TabIndex = 22;
+            // 
+            // tbPopUsername
+            // 
+            this.tbPopUsername.Location = new System.Drawing.Point(328, 205);
+            this.tbPopUsername.Name = "tbPopUsername";
+            this.tbPopUsername.Size = new System.Drawing.Size(200, 20);
+            this.tbPopUsername.TabIndex = 21;
+            // 
             // GUI_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.AutoSize = true;
             this.BackColor = System.Drawing.SystemColors.ButtonHighlight;
-            this.ClientSize = new System.Drawing.Size(876, 549);
+            this.ClientSize = new System.Drawing.Size(869, 545);
+            this.Controls.Add(this.pAuth);
+            this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
-            this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.mailViewer);
             this.Controls.Add(this.btDownload);
             this.Controls.Add(this.lbAttachmentsCount);
@@ -412,15 +483,19 @@
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.panel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximumSize = new System.Drawing.Size(885, 584);
+            this.MinimumSize = new System.Drawing.Size(885, 584);
             this.Name = "GUI_Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "SecurityMailClient";
+            this.Load += new System.EventHandler(this.GUI_Main_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.messageBindingSource)).EndInit();
+            this.pAuth.ResumeLayout(false);
+            this.pAuth.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -459,14 +534,20 @@
         private System.Windows.Forms.ToolStripMenuItem tbstDelete;
         private System.Windows.Forms.ToolStripMenuItem tbstSave;
         private System.Windows.Forms.ToolStripMenuItem открытьСохраненноеСмсToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem правкаToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
-        private System.Windows.Forms.ToolStripMenuItem настройкиToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem безопасностьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem tbstCrypto;
-        private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Panel pAuth;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox tbPopPassword;
+        private System.Windows.Forms.TextBox tbPopUsername;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button btnSave;
     }
 }
 

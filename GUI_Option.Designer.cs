@@ -283,12 +283,13 @@
             // 
             // btnSave
             // 
+            this.btnSave.BackColor = System.Drawing.Color.LightGreen;
             this.btnSave.Location = new System.Drawing.Point(12, 210);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(199, 23);
             this.btnSave.TabIndex = 1;
             this.btnSave.Text = "Сохранить";
-            this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.UseVisualStyleBackColor = false;
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // GUI_Option

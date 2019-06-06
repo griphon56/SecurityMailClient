@@ -35,6 +35,7 @@ namespace MailClient
         public GUI_Main()
         {
             InitializeComponent();
+
             pop3Client = new Pop3Client();
             cspp.KeyContainerName = keyName;
             rsa = new RSACryptoServiceProvider(cspp);
@@ -46,7 +47,10 @@ namespace MailClient
             rijndael.BlockSize = 128;
             rijndael.KeySize = 128;
             rijndael.Mode = CipherMode.CBC;
-            if (File.Exists("ids")) seenUids.AddRange(File.ReadAllLines("ids"));
+
+            if (File.Exists("ids"))
+                seenUids.AddRange(File.ReadAllLines("ids"));
+
             if (File.Exists("contacts"))
                 foreach (string s in File.ReadAllLines("contacts"))
                 {
@@ -72,8 +76,7 @@ namespace MailClient
         /// <param name="e"></param>
         private void optionsToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            GUI_Option OptionForm = new GUI_Option();
-            OptionForm.Show();
+           
         }
 
         /// <summary>
@@ -717,6 +720,41 @@ namespace MailClient
                     tempStr += val.ToString();
             }
             return tempStr;
+        }
+
+        /// <summary>
+        /// Метод открывает форму настроек подключения к почте.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            GUI_Option OptionForm = new GUI_Option();
+            OptionForm.Show();
+        }
+
+        /// <summary>
+        /// Кнопка входа. 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.smtpUsername = tbPopUsername.Text;
+            Properties.Settings.Default.smtpPassword = tbPopPassword.Text;
+            Properties.Settings.Default.popUsername = tbPopUsername.Text;
+            Properties.Settings.Default.popPassword = tbPopPassword.Text;
+
+            Properties.Settings.Default.Save();
+            pAuth.Visible = false;
+
+            tbstGet_Click(sender, e);
+        }
+
+        private void GUI_Main_Load(object sender, EventArgs e)
+        {
+            tbPopUsername.Text = Properties.Settings.Default.popUsername;
+            tbPopPassword.Text = Properties.Settings.Default.popPassword;
         }
     }
 

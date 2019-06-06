@@ -64,12 +64,13 @@
             // 
             // btSend
             // 
+            this.btSend.BackColor = System.Drawing.Color.LightGreen;
             this.btSend.Location = new System.Drawing.Point(567, 403);
             this.btSend.Name = "btSend";
             this.btSend.Size = new System.Drawing.Size(104, 26);
             this.btSend.TabIndex = 5;
             this.btSend.Text = "Отправить";
-            this.btSend.UseVisualStyleBackColor = true;
+            this.btSend.UseVisualStyleBackColor = false;
             this.btSend.Click += new System.EventHandler(this.btSend_Click);
             // 
             // tbRecipient
@@ -78,7 +79,7 @@
             this.tbRecipient.Name = "tbRecipient";
             this.tbRecipient.Size = new System.Drawing.Size(549, 20);
             this.tbRecipient.TabIndex = 0;
-            this.tbRecipient.Text = "skvortsov113@mail.ru";
+            this.tbRecipient.Text = "dima.star90@mail.ru";
             this.tbRecipient.Validated += new System.EventHandler(this.tbRecipient_Validated);
             // 
             // tbCc
@@ -152,22 +153,24 @@
             // 
             // btAddAttachment
             // 
+            this.btAddAttachment.BackColor = System.Drawing.SystemColors.Control;
             this.btAddAttachment.Location = new System.Drawing.Point(515, 107);
             this.btAddAttachment.Name = "btAddAttachment";
             this.btAddAttachment.Size = new System.Drawing.Size(75, 23);
             this.btAddAttachment.TabIndex = 12;
             this.btAddAttachment.Text = "Добавить";
-            this.btAddAttachment.UseVisualStyleBackColor = true;
+            this.btAddAttachment.UseVisualStyleBackColor = false;
             this.btAddAttachment.Click += new System.EventHandler(this.btAddAttachment_Click);
             // 
             // btDeleteAttachment
             // 
+            this.btDeleteAttachment.BackColor = System.Drawing.SystemColors.Control;
             this.btDeleteAttachment.Location = new System.Drawing.Point(596, 107);
             this.btDeleteAttachment.Name = "btDeleteAttachment";
             this.btDeleteAttachment.Size = new System.Drawing.Size(75, 23);
             this.btDeleteAttachment.TabIndex = 13;
             this.btDeleteAttachment.Text = "Удалить";
-            this.btDeleteAttachment.UseVisualStyleBackColor = true;
+            this.btDeleteAttachment.UseVisualStyleBackColor = false;
             this.btDeleteAttachment.Click += new System.EventHandler(this.btDeleteAttachment_Click);
             // 
             // lbAttachmentsCount
